@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>작은 지구 해변</title>
+<style>
+:root{--pbg:rgba(255,251,243,.9);--ptx:#2a2833;--pmu:#6d6a78;--pac:#d9622b;--pln:rgba(0,0,0,.12);--pin:rgba(255,255,255,.7);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pbg:rgba(20,26,42,.9);--ptx:#f2eee6;--pmu:#a9acc0;--pac:#ff9a5c;--pln:rgba(255,255,255,.16);--pin:rgba(255,255,255,.08);color-scheme:dark}}
+:root[data-theme="dark"]{--pbg:rgba(20,26,42,.9);--ptx:#f2eee6;--pmu:#a9acc0;--pac:#ff9a5c;--pln:rgba(255,255,255,.16);--pin:rgba(255,255,255,.08);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:#10202c;font-family:"Gowun Dodum","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#fff}
+canvas{display:block}
+#sea{position:fixed;inset:0;width:100%;height:100%}
+#globe{--g:min(80vmin,740px);position:fixed;left:50%;top:47%;width:var(--g);height:var(--g);transform:translate(-50%,-50%);transition:left .9s cubic-bezier(.65,0,.2,1),top .9s cubic-bezier(.65,0,.2,1),width .9s cubic-bezier(.65,0,.2,1),height .9s cubic-bezier(.65,0,.2,1)}
+#globe canvas{width:100%;height:100%}
+body.open #globe{--g:min(76vmin,calc(100vw - 520px),700px);left:calc((100vw - min(460px,100vw))/2)}
+header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;pointer-events:none;z-index:5}
+header>*{pointer-events:auto}
+.brand{font-size:19px;letter-spacing:.02em;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{font:inherit;font-size:14px;color:#fff;background:rgba(15,25,40,.38);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:8px 14px;cursor:pointer;backdrop-filter:blur(8px);transition:background .2s}
+.btn:hover{background:rgba(15,25,40,.6)}
+.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #ffc27a;outline-offset:2px}
+.btn.on{background:rgba(255,160,90,.75);border-color:#ffd2a6}
+#hint{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:13px;background:rgba(15,25,40,.45);padding:8px 14px;border-radius:999px;backdrop-filter:blur(8px);text-align:center;max-width:92vw;z-index:4;transition:opacity .4s}
+#pad{position:fixed;bottom:calc(60px + env(safe-area-inset-bottom,0px));left:0;right:0;display:none;justify-content:space-between;padding:0 18px;z-index:4;pointer-events:none}
+#pad button{pointer-events:auto;width:64px;height:64px;font-size:26px;touch-action:none;user-select:none;-webkit-user-select:none}
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--pbg);color:var(--ptx);backdrop-filter:blur(18px);transform:translateX(105%);transition:transform .9s cubic-bezier(.65,0,.2,1);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);z-index:6;box-shadow:-8px 0 40px rgba(0,0,0,.3)}
+body.open #panel{transform:none}
+.ph{display:flex;align-items:center;gap:6px;padding:14px 16px 0;border-bottom:1px solid var(--pln)}
+.tab{font:inherit;font-size:16px;background:none;border:0;color:var(--pmu);padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--ptx);border-color:var(--pac)}
+.x{margin-left:auto;font-size:20px;background:none;border:0;color:var(--pmu);cursor:pointer;padding:6px 10px}
+.pb{flex:1;overflow:auto;padding:16px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.pb section[hidden]{display:none}
+form{display:grid;gap:8px;margin-bottom:18px}
+input,textarea{font:inherit;font-size:15px;color:var(--ptx);background:var(--pin);border:1px solid var(--pln);border-radius:10px;padding:9px 11px;width:100%}
+textarea{resize:vertical}
+input[type=file]{font-size:13px;padding:7px}
+.prev{display:none;max-width:100%;max-height:160px;border-radius:10px;object-fit:cover}
+.go{font:inherit;font-size:15px;background:var(--pac);color:#fff;border:0;border-radius:10px;padding:10px;cursor:pointer}
+:root:not([data-theme="light"]) .go{color:#1a1208}
+.card{border-top:1px solid var(--pln);padding:14px 0}
+.card h3{margin:0 0 4px;font-size:17px}
+.meta{font-size:12.5px;color:var(--pmu);margin-bottom:8px}
+.card p{margin:0 0 8px;white-space:pre-wrap;line-height:1.6;font-size:15px;overflow-wrap:anywhere}
+.card img{max-width:100%;border-radius:10px;display:block;margin-bottom:6px}
+.del{font:inherit;font-size:12.5px;background:none;border:0;color:var(--pmu);cursor:pointer;padding:2px 0;text-decoration:underline}
+.empty{color:var(--pmu);text-align:center;padding:24px 0}
+@media (max-width:800px){
+ #globe{--g:min(94vw,52vh);top:46%}
+ body.open #globe{--g:min(66vw,34vh);left:50%;top:calc(22% + 20px)}
+ #panel{top:auto;height:58vh;width:100%;transform:translateY(105%);border-radius:20px 20px 0 0}
+ #pad{display:flex}
+ body.open #pad,body.open #hint{display:none}
+ .brand{font-size:16px}
+ .btn{padding:7px 11px;font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){#globe,#panel{transition-duration:.01s}}
+</style>
+</head>
+<body>
+<canvas id="sea"></canvas>
+<div id="globe"><canvas id="gc"></canvas></div>
+<header>
+ <div class="brand">🌍 작은 지구 해변</div>
+ <nav>
+  <button class="btn" id="nb" data-open="board">게시판</button>
+  <button class="btn" id="ng" data-open="guest">방명록</button>
+  <button class="btn on" id="tai">🤖 AI</button>
+  <button class="btn" id="tsn">🔊 소리</button>
+ </nav>
+</header>
+<div id="hint">🔊 화면을 한 번 누르면 파도 소리가 시작돼요 · ← → 방향키로 소년을 움직여 보세요</div>
+<div id="pad"><button class="btn" id="pl" aria-label="왼쪽">◀</button><button class="btn" id="pr" aria-label="오른쪽">▶</button></div>
+<aside id="panel" aria-label="게시판과 방명록">
+ <div class="ph" role="tablist">
+  <button class="tab" role="tab" data-tab="board">게시판</button>
+  <button class="tab" role="tab" data-tab="guest">방명록</button>
+  <button class="x" id="cl" aria-label="닫기">✕</button>
+ </div>
+ <div class="pb"><section id="s-board"></section><section id="s-guest"></section></div>
+</aside>
+<script>
+const $=s=>document.querySelector(s),D=Math.PI/180,TAU=Math.PI*2;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+/* ================= 바다 + 모래사장 ================= */
+const sea=$('#sea'),sx=sea.getContext('2d');
+let W,H,dpr,sandC,HY,seed=[],clouds=[];
+const rnd=(()=>{let s=7;return()=>(s=(s*16807)%2147483647)/2147483647})();
+for(let i=0;i<150;i++)seed.push([rnd(),rnd(),rnd()]);
+for(let i=0;i<7;i++)clouds.push({x:rnd()*1400,y:.1+rnd()*.7,w:140+rnd()*240,h:6+rnd()*12,v:3+rnd()*6});
+function resize(){
+ dpr=Math.min(devicePixelRatio||1,1.5);W=innerWidth;H=innerHeight;HY=H*.42;
+ sea.width=W*dpr;sea.height=H*dpr;sx.setTransform(dpr,0,0,dpr,0,0);
+ sandC=document.createElement('canvas');sandC.width=W;sandC.height=H;
+ const c=sandC.getContext('2d'),g=c.createLinearGradient(0,H*.7,0,H);
+ g.addColorStop(0,'#e8cfa0');g.addColorStop(1,'#d2ac74');c.fillStyle=g;c.fillRect(0,0,W,H);
+ for(let i=0;i<W*H/260;i++){c.fillStyle=Math.random()<.5?'rgba(120,85,40,.18)':'rgba(255,245,220,.22)';c.fillRect(Math.random()*W,H*.68+Math.random()*H*.32,1.3,1.3)}
+}
+addEventListener('resize',resize);resize();
+let wetY=0;
+function swash(u){return u<.3?1-Math.pow(1-u/.3,2):1-Math.pow((u-.3)/.7,1.5)}
+const WT=9.5;
+function drawSea(t,dt){
+ const c=sx,u=(t%WT)/WT,s=swash(u),SB=H*.74,sy=SB+H*.065*s,sunX=W*.54;
+ const rise=Math.min(1,t/55),sr=Math.max(26,Math.min(W,H)*.045),sunY=HY+sr*1.1-rise*sr*3.2;
+ // 하늘
+ let g=c.createLinearGradient(0,0,0,HY);
+ g.addColorStop(0,'#1c2750');g.addColorStop(.4,'#5d4a7c');g.addColorStop(.75,'#e48a6c');g.addColorStop(1,'#ffd08a');
+ c.fillStyle=g;c.fillRect(0,0,W,HY+1);
+ c.save();c.beginPath();c.rect(0,0,W,HY);c.clip();
+ g=c.createRadialGradient(sunX,sunY,0,sunX,sunY,sr*9);
+ g.addColorStop(0,'rgba(255,225,160,.95)');g.addColorStop(.12,'rgba(255,170,100,.6)');g.addColorStop(1,'rgba(255,120,80,0)');
+ c.fillStyle=g;c.fillRect(0,0,W,HY);
+ c.fillStyle='#fff3c4';c.beginPath();c.arc(sunX,sunY,sr,0,TAU);c.fill();
+ clouds.forEach(k=>{const x=((k.x+t*k.v)%(W+500))-250,y=HY*k.y;
+  c.fillStyle='rgba(255,150,110,.3)';c.beginPath();c.ellipse(x,y,k.w,k.h,0,0,TAU);c.fill();
+  c.fillStyle='rgba(90,55,100,.22)';c.beginPath();c.ellipse(x+20,y+k.h*.8,k.w*.8,k.h*.6,0,0,TAU);c.fill()});
+ c.restore();
+ // 바다
+ g=c.createLinearGradient(0,HY,0,H*.84);
+ g.addColorStop(0,'#f5b27a');g.addColorStop(.06,'#b88a8c');g.addColorStop(.22,'#34607c');g.addColorStop(.7,'#14566a');g.addColorStop(1,'#2aa0a2');
+ c.fillStyle=g;c.fillRect(0,HY,W,H-HY);
+ // 햇빛 반사
+ g=c.createLinearGradient(0,HY,0,SB);g.addColorStop(0,'rgba(255,210,140,.5)');g.addColorStop(1,'rgba(255,190,120,0)');
+ c.fillStyle=g;c.beginPath();c.moveTo(sunX-sr*.8,HY);c.lineTo(sunX+sr*.8,HY);c.lineTo(sunX+W*.18,SB);c.lineTo(sunX-W*.18,SB);c.fill();
+ seed.forEach((r,j)=>{const d=Math.pow(r[0],1.7),y=HY+(SB-HY)*d,sp=sr*1.5+W*.2*d,w=(10+90*d)*(.4+r[2]),x=sunX+(r[1]-.5)*sp*2,a=(.35+.5*Math.sin(t*2.4+j*1.7))*(.5+.5*(1-d));
+  if(a>0){c.fillStyle=`rgba(255,225,170,${a*.7})`;c.fillRect(x-w/2,y,w,1+2.5*d)}});
+ // 파도 줄무늬
+ const N=20,p=(t*.09)%1;
+ for(let i=0;i<N;i++){const d=(i+p)/N,y=HY+(SB-HY)*Math.pow(d,1.8),amp=.8+8*d,f=.012/(.4+d);
+  if(y>sy-2)continue;
+  c.beginPath();for(let x=0;x<=W+30;x+=30){const yy=y+Math.sin(x*f+t*.9+i*2.3)*amp*.6;x?c.lineTo(x,yy):c.moveTo(x,yy)}
+  c.strokeStyle=`rgba(5,30,50,${.1+.15*d})`;c.lineWidth=1+3*d;c.stroke();
+  c.translate(0,-1-d*2);c.strokeStyle=`rgba(255,240,225,${.05+.3*d})`;c.lineWidth=.6+1.6*d;c.stroke();c.translate(0,1+d*2)}
+ // 지평선 안개
+ g=c.createLinearGradient(0,HY-3,0,HY+34);g.addColorStop(0,'rgba(255,215,160,.65)');g.addColorStop(1,'rgba(255,215,160,0)');
+ c.fillStyle=g;c.fillRect(0,HY-3,W,37);
+ // 모래사장
+ const edge=x=>sy+Math.sin(x*.018+t*.5)*3+Math.sin(x*.006+1)*7;
+ c.save();c.beginPath();c.moveTo(0,H);for(let x=0;x<=W+20;x+=20)c.lineTo(x,edge(x));c.lineTo(W,H);c.closePath();c.clip();
+ c.drawImage(sandC,0,0);
+ wetY=Math.max(sy,wetY-16*dt);
+ g=c.createLinearGradient(0,sy,0,wetY+14);g.addColorStop(0,'rgba(90,64,40,.6)');g.addColorStop(.85,'rgba(110,80,50,.3)');g.addColorStop(1,'rgba(110,80,50,0)');
+ c.fillStyle=g;c.fillRect(0,sy-10,W,wetY-sy+26);
+ c.fillStyle='rgba(255,230,190,.12)';c.fillRect(0,sy,W,Math.max(0,(wetY-sy)*.3));
+ c.restore();
+ // 거품
+ const retreat=u>.3?1:0;
+ for(let k=0;k<3;k++){c.beginPath();for(let x=0;x<=W+20;x+=16){const yy=edge(x)-k*5-Math.sin(x*.05+k*2+t)*2;x?c.lineTo(x,yy):c.moveTo(x,yy)}
+  c.strokeStyle=`rgba(255,255,250,${(.8-k*.25)*(retreat?.75:1)})`;c.lineWidth=4-k;c.lineJoin='round';c.stroke()}
+ c.fillStyle='rgba(255,255,255,.55)';
+ for(let i=0;i<70;i++){const x=(i*W/70+Math.sin(i*9.1)*30+W)%W;c.fillRect(x,edge(x)+2+Math.sin(i*3.3+t)*3+(i%4)*1.5,2+i%3,1.2)}
+ // 파도 소리 반영
+ audioEnv(u);
+}
+/* ================= 파도 소리 (WebAudio) ================= */
+let ac,master,gA,gB,fA,muted=false,started=false;
+function startAudio(){
+ if(started){ac&&ac.resume();return}
+ try{
+  ac=new (window.AudioContext||window.webkitAudioContext)();started=true;
+  const mk=(type)=>{const b=ac.createBuffer(1,ac.sampleRate*4,ac.sampleRate),d=b.getChannelData(0);let l=0;
+   for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(type){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}
+   const s=ac.createBufferSource();s.buffer=b;s.loop=true;return s};
+  master=ac.createGain();master.gain.value=muted?0:.9;master.connect(ac.destination);
+  const a=mk(1);fA=ac.createBiquadFilter();fA.type='lowpass';fA.frequency.value=500;gA=ac.createGain();gA.gain.value=0;a.connect(fA);fA.connect(gA);gA.connect(master);a.start();
+  const b=mk(0),fb=ac.createBiquadFilter();fb.type='bandpass';fb.frequency.value=2600;fb.Q.value=.6;gB=ac.createGain();gB.gain.value=0;b.connect(fb);fb.connect(gB);gB.connect(master);b.start();
+  $('#hint').innerHTML='← → 방향키로 소년을 직접 움직일 수 있어요 🌅';
+ }catch(e){}
+}
+function audioEnv(u){
+ if(!ac)return;
+ const e=u<.3?Math.sin(Math.PI*u/.3):.5*Math.sin(Math.PI*(u-.3)/.7),T=ac.currentTime;
+ gA.gain.setTargetAtTime(.1+.8*e,T,.12);gB.gain.setTargetAtTime(.01+.14*e*e,T,.12);fA.frequency.setTargetAtTime(380+1500*e,T,.12);
+}
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,startAudio,{once:false,passive:true}));
+$('#tsn').onclick=e=>{e.stopPropagation();muted=!muted;if(master)master.gain.value=muted?0:.9;e.currentTarget.classList.toggle('on',!muted);e.currentTarget.textContent=muted?'🔇 소리':'🔊 소리'};
+$('#tsn').classList.add('on');
+/* ================= 3D 지구 + 캐릭터 ================= */
+const gc=$('#gc'),g=gc.getContext('2d');let GW=300;
+new ResizeObserver(()=>{const r=gc.getBoundingClientRect();GW=r.width||300;gc.width=Math.round(GW*dpr);gc.height=Math.round(GW*dpr)}).observe(gc);
+const LAND=[[10,45,26],[-80,40,28],[-60,-15,22],[22,0,24],[90,45,30],[130,-25,16],[-130,52,14],[60,20,14],[170,-70,20],[150,10,10],[-20,-60,18]];
+function proj(lo,la,rot,tilt){lo=(lo+rot)*D;la*=D;let x=Math.cos(la)*Math.sin(lo),y=Math.sin(la),z=Math.cos(la)*Math.cos(lo);
+ const y2=y*Math.cos(tilt)-z*Math.sin(tilt),z2=y*Math.sin(tilt)+z*Math.cos(tilt);
+ if(z2<0){const m=Math.hypot(x,y2)||1;x/=m;return[x,y2/m]}return[x,y2]}
+function drawPlanet(c,cx,cy,R,t){
+ let gr=c.createRadialGradient(cx,cy,R*.97,cx,cy,R*1.3);gr.addColorStop(0,'rgba(150,205,255,.5)');gr.addColorStop(1,'rgba(150,205,255,0)');
+ c.fillStyle=gr;c.beginPath();c.arc(cx,cy,R*1.3,0,TAU);c.fill();
+ c.save();c.beginPath();c.arc(cx,cy,R,0,TAU);c.clip();
+ gr=c.createRadialGradient(cx-R*.35,cy-R*.35,R*.1,cx,cy,R*1.05);gr.addColorStop(0,'#6fd0f0');gr.addColorStop(.55,'#2a86c8');gr.addColorStop(1,'#0c3f82');
+ c.fillStyle=gr;c.fillRect(cx-R,cy-R,2*R,2*R);
+ const rot=t*7,tilt=22*D;
+ LAND.forEach(([lo,la,r],k)=>{c.beginPath();
+  for(let i=0;i<=26;i++){const a=i/26*TAU,j=1+.35*Math.sin(a*3+k)+.2*Math.sin(a*5+k*2),
+   p=proj(lo+Math.cos(a)*r*j/Math.max(.35,Math.cos(la*D)),la+Math.sin(a)*r*j*.8,rot,tilt),X=cx+p[0]*R,Y=cy-p[1]*R;i?c.lineTo(X,Y):c.moveTo(X,Y)}
+  c.fillStyle=k%3?'#58b45a':'#a4b85a';c.fill()});
+ for(let k=0;k<9;k++){const p=proj(k*41,(k*37%120)-60,rot*1.4,tilt);const X=cx+p[0]*R,Y=cy-p[1]*R;if(Math.hypot(p[0],p[1])<.93){c.fillStyle='rgba(255,255,255,.5)';[0,1,2].forEach(i=>{c.beginPath();c.ellipse(X+i*9-9,Y+(i%2)*3,13,5,0,0,TAU);c.fill()})}}
+ gr=c.createRadialGradient(cx-R*.4,cy-R*.4,R*.2,cx-R*.1,cy-R*.1,R*1.35);gr.addColorStop(0,'rgba(255,255,255,.14)');gr.addColorStop(.5,'rgba(0,0,30,0)');gr.addColorStop(1,'rgba(0,0,30,.6)');
+ c.fillStyle=gr;c.fillRect(cx-R,cy-R,2*R,2*R);
+ c.restore();
+ c.strokeStyle='#62c24c';c.lineWidth=R*.04;c.beginPath();c.arc(cx,cy,R*1.0,0,TAU);c.stroke();
+ c.strokeStyle='rgba(30,90,30,.35)';c.lineWidth=R*.012;c.beginPath();c.arc(cx,cy,R*.975,0,TAU);c.stroke();
+}
+// 꽃
+const FC=['#ff6b8b','#ffd23f','#ff9a3c','#c77dff','#ffffff','#ff8fd0','#7ad0ff'];
+const flowers=[];for(let i=0;i<22;i++)flowers.push({a:i/22*TAU+rnd()*.2,h:16+rnd()*20,c:FC[i%FC.length],n:5+i%3,r:5+rnd()*3,p:rnd()*6});
+function drawFlower(c,f,t){const sw=Math.sin(t*1.6+f.p)*3;
+ c.strokeStyle='#3c9b3c';c.lineWidth=2;c.lineCap='round';c.beginPath();c.moveTo(0,2);c.quadraticCurveTo(sw*.3,-f.h*.5,sw,-f.h);c.stroke();
+ c.fillStyle='#4cb04c';c.beginPath();c.ellipse(-4,-f.h*.35,5,2,-.6,0,TAU);c.fill();
+ c.fillStyle=f.c;for(let i=0;i<f.n;i++){const a=i/f.n*TAU;c.beginPath();c.arc(sw+Math.cos(a)*f.r*.9,-f.h+Math.sin(a)*f.r*.9,f.r*.7,0,TAU);c.fill()}
+ c.fillStyle='#ffcf33';c.beginPath();c.arc(sw,-f.h,f.r*.5,0,TAU);c.fill()}
+const leg=(c,x0,y0,x1,y1,w,col)=>{c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke()};
+const circ=(c,x,y,r,col)=>{c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,TAU);c.fill()};
+function drawBoy(c,e,t){
+ const mv=e.v!==0,ph=e.ph,sw=mv?Math.sin(ph):0,bob=mv?Math.abs(Math.cos(ph))*3:Math.sin(t*2)*.8;
+ c.translate(0,-bob);
+ const fl=mv?6:2;
+ c.strokeStyle='#ffd23f';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(-3,-62);c.quadraticCurveTo(-22,-58+Math.sin(t*9)*fl,-40,-60+Math.sin(t*9+1)*fl*1.4);c.stroke();
+ [1,-1].forEach(s=>{const fx=s*sw*15,fy=bob-Math.max(0,s*Math.cos(ph))*6-3;leg(c,0,-32,fx,fy,7,'#d8b48a');c.fillStyle='#6b4226';c.beginPath();c.ellipse(fx+3,fy+1,7,4,0,0,TAU);c.fill()});
+ leg(c,-2,-58,-sw*13,-42,6,'#35855c');circ(c,-sw*13,-41,3.5,'#ffe0c0');
+ c.fillStyle='#3e9b6e';c.beginPath();c.roundRect(-14,-64,28,34,9);c.fill();
+ c.fillStyle='#f4c542';c.fillRect(-14,-43,28,4);
+ leg(c,2,-58,sw*13,-42,6,'#3e9b6e');circ(c,sw*13,-41,3.5,'#ffe0c0');
+ circ(c,3,-78,13,'#ffe0c0');
+ c.fillStyle='#ffd84a';c.beginPath();c.arc(2,-80,14.5,Math.PI*.98,TAU*1.01);c.fill();
+ [-11,-5,1,7,13].forEach((x,i)=>{c.beginPath();c.moveTo(x-3,-88);c.lineTo(x+2,-101+(i%2)*5+Math.sin(t*3+i)*1.2);c.lineTo(x+6,-88);c.fill()});
+ c.fillRect(-12,-82,5,13);
+ circ(c,9,-78,1.9,'#222');circ(c,11,-72.5,3,'rgba(255,120,120,.5)');
+ c.strokeStyle='#8a4a3a';c.lineWidth=1.3;c.beginPath();c.arc(8,-74.5,3,.2,Math.PI-.5);c.stroke();
+ circ(c,-1,-69,0,'#000');
+}
+function drawDog(c,e,t){
+ const mv=e.v!==0,ph=e.ph,sw=mv?Math.sin(ph):0,bob=mv?Math.abs(Math.cos(ph))*2.5:0;
+ c.translate(0,-bob);
+ [[-14,1],[14,1],[-14,-1],[14,-1]].forEach(([x,s],i)=>{const k=i<2?1:-1;leg(c,x,-18,x+sw*k*(i%2?1:-1)*9,bob-Math.max(0,k*Math.cos(ph))*3-1,6,i<2?'#b57a3e':'#c98a4b')});
+ leg(c,-22,-30,-32,-40+Math.sin(t*(mv?18:6))*(mv?7:4),5,'#c98a4b');
+ c.fillStyle='#c98a4b';c.beginPath();c.ellipse(0,-26,23,12,0,0,TAU);c.fill();
+ c.fillStyle='#f3dcc0';c.beginPath();c.ellipse(4,-20,14,5,0,0,TAU);c.fill();
+ circ(c,22,-37,11,'#c98a4b');
+ c.fillStyle='#f3dcc0';c.beginPath();c.ellipse(30,-33,8,6,0,0,TAU);c.fill();
+ circ(c,36,-35,2.6,'#222');circ(c,24,-40,1.8,'#222');
+ c.fillStyle='#7a4622';c.beginPath();c.ellipse(15,-37,5,9,.3+Math.sin(ph)*(mv?.3:0),0,TAU);c.fill();
+ if(mv){c.fillStyle='#ff7d92';c.beginPath();c.ellipse(32,-28,2.5,4,0,0,TAU);c.fill()}
+}
+function drawCat(c,e,t){
+ const mv=e.v!==0,ph=e.ph,sw=mv?Math.sin(ph):0,bob=mv?Math.abs(Math.cos(ph))*2:Math.sin(t*2.2)*.5;
+ c.translate(0,-bob);
+ c.strokeStyle='#e0974f';c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(-15,-24);c.bezierCurveTo(-34,-24,-30,-46+Math.sin(t*3)*5,-40,-52+Math.sin(t*3)*8);c.stroke();
+ [[-11,1],[11,1],[-11,-1],[11,-1]].forEach(([x,s],i)=>{const k=i<2?1:-1;leg(c,x,-14,x+sw*k*(i%2?1:-1)*8,bob-Math.max(0,k*Math.cos(ph))*3-1,5,i<2?'#d28a45':'#e8a05a')});
+ c.fillStyle='#e8a05a';c.beginPath();c.ellipse(0,-22,18,10,0,0,TAU);c.fill();
+ c.strokeStyle='#c27a35';c.lineWidth=2;[-6,0,6].forEach(x=>{c.beginPath();c.moveTo(x,-31);c.lineTo(x-2,-24);c.stroke()});
+ circ(c,17,-32,10,'#e8a05a');
+ c.fillStyle='#e8a05a';[[-1],[1]].forEach(([s])=>{c.beginPath();c.moveTo(17+s*3,-39);c.lineTo(17+s*9+3,-50);c.lineTo(17+s*9+4,-36);c.fill()});
+ c.fillStyle='#ffb4b4';c.beginPath();c.moveTo(24,-40);c.lineTo(27,-47);c.lineTo(27,-39);c.fill();
+ circ(c,21,-33,2,'#2a2a2a');circ(c,14,-33,2,'#2a2a2a');circ(c,24,-30,1.4,'#ff8a8a');
+ c.strokeStyle='rgba(60,40,20,.6)';c.lineWidth=.9;[-2,2].forEach(d=>{c.beginPath();c.moveTo(24,-29);c.lineTo(32,-30+d*2);c.stroke()});
+}
+const boy={k:'boy',a:0,v:0,dir:1,ph:0,tmr:0,sp:.5,fn:drawBoy,s:1},
+ dog={k:'dog',a:.7,v:0,dir:1,ph:0,tmr:0,sp:.95,fn:drawDog,s:1},
+ cat={k:'cat',a:-.8,v:0,dir:-1,ph:0,tmr:0,sp:.6,fn:drawCat,s:1};
+const ents=[dog,cat,boy];
+const angD=(a,b)=>((a-b+Math.PI)%TAU+TAU)%TAU-Math.PI;
+let aiOn=true,cam=0,manual=0;const keys={l:false,r:false};
+function ai(e,dt){e.tmr-=dt;if(e.tmr>0)return;
+ if(Math.random()<.28){e.v=0;e.tmr=1+Math.random()*2.2;return}
+ let d=Math.random()<.5?-1:1;
+ if(e.k==='dog'&&Math.random()<.6){d=Math.sign(angD(boy.a,e.a))||1}
+ e.v=d*e.sp*(.55+Math.random()*.45);e.tmr=1.4+Math.random()*3}
+function step(dt){
+ const m=(keys.r?1:0)-(keys.l?1:0);
+ if(m){manual=2.5;boy.v=m*.8}else if(manual>0){manual-=dt;boy.v=0}else if(aiOn)ai(boy,dt);else boy.v=0;
+ ents.forEach(e=>{if(e!==boy)ai(e,dt);e.a+=e.v*dt;if(e.v)e.dir=Math.sign(e.v);e.ph+=Math.abs(e.v)*dt*20});
+ cam+=angD(boy.a,cam)*Math.min(1,dt*5);
+}
+function drawGlobe(t){
+ const S=gc.width;g.setTransform(S/GW,0,0,S/GW,0,0);g.clearRect(0,0,GW,GW);
+ const cx=GW/2,cy=GW/2,R=GW*.3,k=R/300;
+ g.save();g.translate(0,GW*.04);
+ drawPlanet(g,cx,cy,R,t);
+ const place=(rel,fn)=>{const al=clamp((1.95-Math.abs(rel))/.45,0,1);if(al<=0)return;
+  g.save();g.globalAlpha=al;g.translate(cx+R*Math.sin(rel),cy-R*Math.cos(rel));g.rotate(rel);g.scale(k*1.15,k*1.15);fn();g.restore()};
+ flowers.forEach(f=>place(angD(f.a,cam),()=>drawFlower(g,f,t)));
+ ents.forEach(e=>place(angD(e.a,cam),()=>{g.scale(e.dir,1);e.fn(g,e,t)}));
+ g.restore();
+}
+/* ================= 입력 ================= */
+const typing=()=>/INPUT|TEXTAREA/.test(document.activeElement.tagName);
+addEventListener('keydown',e=>{if(typing())return;if(e.key==='ArrowLeft'){keys.l=true;e.preventDefault()}if(e.key==='ArrowRight'){keys.r=true;e.preventDefault()}});
+addEventListener('keyup',e=>{if(e.key==='ArrowLeft')keys.l=false;if(e.key==='ArrowRight')keys.r=false});
+addEventListener('blur',()=>{keys.l=keys.r=false});
+[['#pl','l'],['#pr','r']].forEach(([s,k])=>{const b=$(s);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});
+$('#tai').onclick=e=>{aiOn=!aiOn;e.currentTarget.classList.toggle('on',aiOn);e.currentTarget.textContent=aiOn?'🤖 AI':'🕹 직접'};
+/* ================= 게시판 / 방명록 ================= */
+function h(t,p={},...k){const e=document.createElement(t);for(const[a,b]of Object.entries(p)){if(a==='on')for(const[ev,fn]of Object.entries(b))e.addEventListener(ev,fn);else if(a in e)e[a]=b;else e.setAttribute(a,b)}k.flat().forEach(x=>e.append(x));return e}
+function mkBoard(host,key,withTitle,seedItems,labels){
+ let items;try{items=JSON.parse(localStorage.getItem(key)||'null')||seedItems}catch(e){items=seedItems}
+ const save=()=>{try{localStorage.setItem(key,JSON.stringify(items));return true}catch(e){alert('저장 공간이 부족해요. 사진 크기를 줄이거나 오래된 글을 삭제해 주세요.');return false}};
+ let img=null;
+ const name=h('input',{placeholder:'이름',maxLength:20,'aria-label':'이름'}),
+  title=h('input',{placeholder:'제목',maxLength:60,'aria-label':'제목'}),
+  txt=h('textarea',{placeholder:labels.ph,rows:3,maxLength:1000,'aria-label':'내용'}),
+  prev=h('img',{className:'prev',alt:'첨부 사진 미리보기'}),
+  file=h('input',{type:'file',accept:'image/*','aria-label':'사진 첨부',on:{change(){
+   const f=file.files[0];if(!f){img=null;prev.style.display='none';return}
+   const u=URL.createObjectURL(f),im=new Image();
+   im.onload=()=>{const s=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);img=c.toDataURL('image/jpeg',.78);prev.src=img;prev.style.display='block';URL.revokeObjectURL(u)};
+   im.onerror=()=>{alert('이미지를 불러오지 못했어요. 다른 사진을 선택해 주세요.');URL.revokeObjectURL(u)};im.src=u}}}),
+  list=h('div');
+ const form=h('form',{on:{submit(e){e.preventDefault();
+  if(!txt.value.trim()){txt.focus();return}
+  if(withTitle&&!title.value.trim()){title.focus();return}
+  items.unshift({id:Date.now(),name:name.value.trim()||'익명',title:title.value.trim(),text:txt.value.trim(),img,ts:Date.now()});
+  if(!save()){items.shift();return}
+  txt.value='';title.value='';file.value='';img=null;prev.style.display='none';render()}}},
+  name,withTitle?title:'',txt,file,prev,h('button',{className:'go',type:'submit'},labels.btn));
+ function render(){
+  list.replaceChildren(...(items.length?items.map(it=>h('article',{className:'card'},
+   it.title?h('h3',{},it.title):'',
+   h('div',{className:'meta'},it.name+' · '+new Date(it.ts).toLocaleString('ko-KR',{dateStyle:'medium',timeStyle:'short'})),
+   h('p',{},it.text),
+   it.img?h('img',{src:it.img,alt:'첨부 사진',loading:'lazy'}):'',
+   h('button',{className:'del',type:'button',on:{click(){if(confirm('이 글을 삭제할까요?')){items=items.filter(x=>x.id!==it.id);save();render()}}}},'삭제'))):[h('div',{className:'empty'},labels.empty)]))}
+ host.append(form,list);render();
+}
+const now=Date.now();
+mkBoard($('#s-board'),'lpb:board',true,[{id:1,name:'바다지기',title:'작은 지구 해변에 오신 걸 환영해요',text:'파도 소리를 들으며 소년과 강아지, 고양이가 뛰노는 모습을 구경해 보세요. 이곳에 소식과 사진을 남겨 주세요.',img:null,ts:now}],{ph:'내용을 입력하세요',btn:'글 올리기',empty:'아직 글이 없어요. 첫 글을 남겨 보세요.'});
+mkBoard($('#s-guest'),'lpb:guest',false,[{id:2,name:'첫 번째 손님',title:'',text:'일출이 정말 예뻐요. 다녀갑니다!',img:null,ts:now}],{ph:'방명록에 한 줄 남겨 주세요',btn:'방명록 남기기',empty:'아직 방명록이 비어 있어요.'});
+let cur='board';
+function showTab(t){cur=t;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+ $('#s-board').hidden=t!=='board';$('#s-guest').hidden=t!=='guest';
+ $('#nb').classList.toggle('on',t==='board'&&isOpen());$('#ng').classList.toggle('on',t==='guest'&&isOpen())}
+const isOpen=()=>document.body.classList.contains('open');
+function openP(t){document.body.classList.add('open');showTab(t)}
+function closeP(){document.body.classList.remove('open');showTab(cur)}
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{isOpen()&&cur===b.dataset.open?closeP():openP(b.dataset.open)}));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('#cl').onclick=closeP;
+addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())closeP()});
+showTab('board');
+/* ================= 루프 ================= */
+let last=performance.now(),T0=last;
+function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;const t=(n-T0)/1000;
+ step(dt);drawSea(t,dt);drawGlobe(t);requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
