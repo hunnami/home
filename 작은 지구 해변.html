@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>작은 지구 해변 · 지구니의 바다</title>
-<meta name="description" content="파도 소리가 들리는 3D 바다에서 지구니, 강아지, 고양이와 함께하는 작은 지구 해변.">
+<title>작은 지구 해변 · 지구를 도는 어린왕자</title>
+<meta name="description" content="파도 소리가 들리는 3D 바다에서 지구를 도는 어린왕자, 지구니, 강아지, 고양이와 함께하는 작은 지구 해변.">
 <meta name="theme-color" content="#0b1c2c">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%232f8f5a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -194,7 +194,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.6}
 </header>
 
 <div id="hint">
-  <span>화면을 한 번 누르면 <b>파도 소리</b>가 시작돼요 · <b>방향키</b>로 지구 이동 · <b>우클릭 드래그</b>로 회전 · <b>휠</b>로 확대/축소</span>
+  <span>화면을 한 번 누르면 <b>파도 소리</b>가 시작돼요 · <b>지구를 도는 어린왕자 🌹</b> · <b>방향키</b>로 지구 이동 · <b>우클릭 드래그</b>로 회전</span>
 </div>
 
 <aside id="panel" aria-label="게시판과 방명록">
@@ -784,7 +784,13 @@ const MAT = {
   catLo:  new THREE.MeshStandardMaterial({ color: 0xfff1dd, roughness: 0.82 }),
   nose:   new THREE.MeshStandardMaterial({ color: 0x2a2226, roughness: 0.3 }),
   pink:   new THREE.MeshStandardMaterial({ color: 0xff9fa8, roughness: 0.7 }),
-  leaf:   new THREE.MeshStandardMaterial({ color: 0x57b85f, roughness: 0.75 })
+  leaf:   new THREE.MeshStandardMaterial({ color: 0x57b85f, roughness: 0.75 }),
+  princeHair:  new THREE.MeshStandardMaterial({ color: 0xffd84a, roughness: 0.52 }),
+  princeSuit:  new THREE.MeshStandardMaterial({ color: 0x2e8b57, roughness: 0.62 }),
+  princeBelt:  new THREE.MeshStandardMaterial({ color: 0xf4c542, roughness: 0.42 }),
+  princeScarf: new THREE.MeshStandardMaterial({ color: 0xffd23f, roughness: 0.45, side: THREE.DoubleSide }),
+  princeBoot:  new THREE.MeshStandardMaterial({ color: 0x6b4226, roughness: 0.8 }),
+  rose:        new THREE.MeshStandardMaterial({ color: 0xe63946, roughness: 0.45 })
 };
 
 function mesh(geo, mat, x = 0, y = 0, z = 0){
@@ -1021,12 +1027,123 @@ function makeCat(){
   return { group: g, head, legs, tail: tailGroup, earL, earR };
 }
 
+/* ---- 어린왕자 : 지구를 도는 소년 ---- */
+function makeLittlePrince(){
+  const g = new THREE.Group();
+
+  // 머리 & 얼굴
+  const headGroup = new THREE.Group();
+  headGroup.position.y = 0.22;
+  const faceMesh = sphere(0.065, MAT.cream, 0, 0, 0, 22);
+  headGroup.add(faceMesh);
+
+  // 초롱초롱한 눈
+  const eyeL = sphere(0.009, MAT.black, -0.022, 0.008, 0.058, 12);
+  const eyeR = sphere(0.009, MAT.black,  0.022, 0.008, 0.058, 12);
+  const hiL  = sphere(0.0035, MAT.white, -0.024, 0.011, 0.064, 8);
+  const hiR  = sphere(0.0035, MAT.white,  0.020, 0.011, 0.064, 8);
+  const blushL = sphere(0.015, MAT.blush, -0.038, -0.012, 0.048, 10);
+  const blushR = sphere(0.015, MAT.blush,  0.038, -0.012, 0.048, 10);
+  const smile = mesh(new THREE.TorusGeometry(0.014, 0.003, 4, 12, Math.PI), MAT.mouth, 0, -0.022, 0.060);
+  smile.rotation.set(0.2, 0, Math.PI);
+  headGroup.add(eyeL, eyeR, hiL, hiR, blushL, blushR, smile);
+
+  // 금발 머리카락 (바람에 흩날리는 어린왕자 헤어)
+  const hairGroup = new THREE.Group();
+  const hairBase = sphere(0.072, MAT.princeHair, 0, 0.015, -0.006, 22);
+  hairGroup.add(hairBase);
+  const hairTuft1 = mesh(new THREE.ConeGeometry(0.028, 0.060, 8), MAT.princeHair, -0.035, 0.068, 0.01);
+  hairTuft1.rotation.set(0.1, 0, 0.45);
+  const hairTuft2 = mesh(new THREE.ConeGeometry(0.028, 0.060, 8), MAT.princeHair,  0.035, 0.068, 0.01);
+  hairTuft2.rotation.set(0.1, 0, -0.45);
+  const hairTuft3 = mesh(new THREE.ConeGeometry(0.030, 0.070, 8), MAT.princeHair, 0, 0.078, 0.01);
+  hairTuft3.rotation.set(0.2, 0, 0.1);
+  const fringe = mesh(new THREE.ConeGeometry(0.022, 0.040, 8), MAT.princeHair, 0.01, 0.052, 0.065);
+  fringe.rotation.set(-0.4, 0.1, 0);
+  hairGroup.add(hairTuft1, hairTuft2, hairTuft3, fringe);
+  headGroup.add(hairGroup);
+  g.add(headGroup);
+
+  // 몸체 - 에메랄드 그린 슈트 & 골드 벨트 & 장미
+  const torsoGroup = new THREE.Group();
+  torsoGroup.position.y = 0.11;
+  const coat = capsule(0.048, 0.075, MAT.princeSuit, 0, 0, 0);
+  torsoGroup.add(coat);
+  const belt = mesh(new THREE.CylinderGeometry(0.051, 0.051, 0.018, 16), MAT.princeBelt, 0, -0.015, 0);
+  torsoGroup.add(belt);
+  const rose = sphere(0.014, MAT.rose, 0.030, 0.032, 0.045, 10);
+  torsoGroup.add(rose);
+  g.add(torsoGroup);
+
+  // 노란 머플러 (스카프)
+  const scarfGroup = new THREE.Group();
+  scarfGroup.position.set(0, 0.165, 0);
+  const collar = mesh(new THREE.TorusGeometry(0.052, 0.016, 6, 16), MAT.princeScarf, 0, 0, 0);
+  collar.rotation.x = Math.PI / 2;
+  scarfGroup.add(collar);
+
+  const scarfTails = [];
+  [-0.015, 0.015].forEach(sx => {
+    const tailGroup = new THREE.Group();
+    tailGroup.position.set(sx, 0, -0.045);
+    const seg1 = mesh(new THREE.BoxGeometry(0.022, 0.008, 0.08), MAT.princeScarf, 0, 0, -0.04);
+    const seg2 = mesh(new THREE.BoxGeometry(0.020, 0.006, 0.08), MAT.princeScarf, 0, 0, -0.08);
+    const seg3 = mesh(new THREE.BoxGeometry(0.016, 0.005, 0.07), MAT.princeScarf, 0, 0, -0.07);
+    seg1.add(seg2);
+    seg2.add(seg3);
+    tailGroup.add(seg1);
+    scarfGroup.add(tailGroup);
+    scarfTails.push({ root: tailGroup, s1: seg1, s2: seg2, s3: seg3 });
+  });
+  g.add(scarfGroup);
+
+  // 팔
+  const armL = new THREE.Group(); armL.position.set(-0.062, 0.145, 0);
+  armL.add(capsule(0.018, 0.070, MAT.princeSuit, 0, -0.035, 0));
+  armL.add(sphere(0.018, MAT.cream, 0, -0.078, 0, 10));
+  const armR = new THREE.Group(); armR.position.set(0.062, 0.145, 0);
+  armR.add(capsule(0.018, 0.070, MAT.princeSuit, 0, -0.035, 0));
+  armR.add(sphere(0.018, MAT.cream, 0, -0.078, 0, 10));
+  g.add(armL, armR);
+
+  // 다리 & 갈색 가죽 부츠
+  const legL = new THREE.Group(); legL.position.set(-0.028, 0.065, 0);
+  legL.add(capsule(0.020, 0.060, MAT.princeSuit, 0, -0.030, 0));
+  const bootL = sphere(0.024, MAT.princeBoot, 0, -0.065, 0.010, 12);
+  bootL.scale.set(1, 0.8, 1.4);
+  legL.add(bootL);
+
+  const legR = new THREE.Group(); legR.position.set(0.028, 0.065, 0);
+  legR.add(capsule(0.020, 0.060, MAT.princeSuit, 0, -0.030, 0));
+  const bootR = sphere(0.024, MAT.princeBoot, 0, -0.065, 0.010, 12);
+  bootR.scale.set(1, 0.8, 1.4);
+  legR.add(bootR);
+
+  g.add(legL, legR);
+
+  return { group: g, head: headGroup, torso: torsoGroup, armL, armR, legL, legR, scarfTails, hairTuft1, hairTuft2 };
+}
+
 /* ---- 배치 & AI ---- */
 const M = makeMascot(), D = makeDog(), K = makeCat();
 M.group.scale.setScalar(0.94);
 D.group.scale.setScalar(0.86);
 K.group.scale.setScalar(0.84);
 [M, D, K].forEach(c => scene.add(c.group));
+
+// 어린왕자 생성 및 지구에 배치
+const P = makeLittlePrince();
+P.group.scale.setScalar(0.96);
+globeGroup.add(P.group);
+
+const prince = {
+  obj: P,
+  angle: 0.6,
+  speed: 0.36,
+  walkPhase: 0,
+  wave: 0,
+  lat: 0.44
+};
 
 function placeOnSand(obj, x, z){ obj.position.set(x, islandHeight(x, z), z); }
 
@@ -1822,9 +1939,61 @@ setTimeout(() => hint.classList.add('hide'), 9000);
    월드 업데이트
    ========================================================================== */
 const tmpV = new THREE.Vector3();
+const tmpUp = new THREE.Vector3();
+const tmpTan = new THREE.Vector3();
+const tmpRight = new THREE.Vector3();
+const princeM4 = new THREE.Matrix4();
+
 function updateWorld(dt, t){
   oceanUniforms.uTime.value = t;
   sky.position.copy(camera.position);
+
+  // 지구를 도는 어린왕자
+  if (prince){
+    prince.angle += prince.speed * dt;
+    prince.walkPhase += dt * 7.5;
+    if (Math.random() < dt * 0.08) prince.wave = 1.6;
+
+    const lat = prince.lat;
+    const cosLat = Math.cos(lat), sinLat = Math.sin(lat);
+    const r = 1.006;
+
+    const px = Math.sin(prince.angle) * cosLat * r;
+    const py = sinLat * r;
+    const pz = Math.cos(prince.angle) * cosLat * r;
+
+    const pUp = tmpUp.set(px, py, pz).normalize();
+    const pTan = tmpTan.set(Math.cos(prince.angle), 0, -Math.sin(prince.angle)).normalize();
+    const pRight = tmpRight.crossVectors(pTan, pUp).normalize();
+
+    const bob = Math.abs(Math.sin(prince.walkPhase)) * 0.014;
+    princeM4.makeBasis(pRight, pUp, pTan.negate());
+    prince.obj.group.quaternion.setFromRotationMatrix(princeM4);
+    prince.obj.group.position.set(px, py, pz).addScaledVector(pUp, bob);
+
+    const walkSin = Math.sin(prince.walkPhase);
+    prince.obj.legL.rotation.x = walkSin * 0.65;
+    prince.obj.legR.rotation.x = -walkSin * 0.65;
+
+    const waveArm = prince.wave > 0 ? Math.sin(t * 10) * 0.85 : 0;
+    prince.obj.armL.rotation.x = -walkSin * 0.5;
+    prince.obj.armR.rotation.x = waveArm !== 0 ? -1.8 + waveArm * 0.35 : walkSin * 0.5;
+    prince.obj.armR.rotation.z = waveArm !== 0 ? -0.45 : 0;
+    if (prince.wave > 0) prince.wave -= dt;
+
+    prince.obj.scarfTails.forEach((tail, idx) => {
+      const w1 = Math.sin(t * 8.5 + idx * 1.5);
+      const w2 = Math.cos(t * 6.5 + idx * 1.2);
+      tail.root.rotation.x = 0.28 + w1 * 0.12;
+      tail.s1.rotation.y = w1 * 0.25;
+      tail.s2.rotation.y = w2 * 0.35;
+      tail.s3.rotation.y = w1 * 0.45;
+      tail.s2.rotation.x = 0.14 + w2 * 0.12;
+    });
+
+    if (prince.obj.hairTuft1) prince.obj.hairTuft1.rotation.z = 0.45 + Math.sin(t * 5) * 0.1;
+    if (prince.obj.hairTuft2) prince.obj.hairTuft2.rotation.z = -0.45 - Math.sin(t * 5.5) * 0.1;
+  }
 
   // 지구니
   const c = critter.mascot;
@@ -1894,7 +2063,7 @@ function frame(now){
 requestAnimationFrame(frame);
 
 // 디버그용 (콘솔에서 확인)
-window.jiguni = { scene, camera, renderer, globeGroup, applyMode, Sound, cam, move, critter, THREE, sky, skyUniforms, C, PRESETS, oceanUniforms };
+window.jiguni = { scene, camera, renderer, globeGroup, prince, applyMode, Sound, cam, move, critter, THREE, sky, skyUniforms, C, PRESETS, oceanUniforms };
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
